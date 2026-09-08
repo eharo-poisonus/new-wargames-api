@@ -9,7 +9,6 @@ use App\Authentication\Accounts\Domain\AccountRepository;
 use App\Authentication\Accounts\Domain\Exceptions\AccountDeletedException;
 use App\Authentication\Accounts\Domain\Exceptions\AccountDoesNotExistException;
 use App\Authentication\Accounts\Domain\Exceptions\AccountNotActivatedException;
-use App\Authentication\Accounts\Domain\ValueObjects\AccountId;
 use App\Authentication\RefreshTokens\Application\CreateRefreshToken\RefreshTokenCreatorService;
 use App\Authentication\RefreshTokens\Domain\Exceptions\InvalidRefreshTokenException;
 use App\Authentication\RefreshTokens\Domain\Exceptions\RefreshTokenExpiredException;
@@ -26,7 +25,6 @@ use App\Authentication\Sessions\Domain\ValueObjects\SessionId;
 use App\Shared\Domain\Criteria\Criteria;
 use App\Shared\Domain\Criteria\Filters\Filter;
 use App\Shared\Domain\Criteria\Groups\FiltersGroupAnd;
-use InvalidArgumentException;
 
 final readonly class RefreshTokenRefresherService
 {
@@ -47,16 +45,18 @@ final readonly class RefreshTokenRefresherService
      * @throws RefreshTokenExpiredException|RefreshTokenRevokedException|AccountDoesNotExistException
      * @throws AccountNotActivatedException|AccountDeletedException
      */
-    public function __invoke(string $sessionId, string $plainRefreshToken): RefreshTokenResponse
+    public function __invoke(SessionId $sessionId, string $plainRefreshToken): RefreshTokenResponse
     {
-        $session = $this->retrieveSession($this->toSessionId($sessionId));
+        $session = $this->sessionRepository->id($sessionId);
+        $this->ensureSessionExists($session);
         $this->ensureSessionIsUsable($session);
 
         $refreshToken = $this->retrieveRefreshToken($plainRefreshToken);
         $this->ensureRefreshTokenBelongsToSession($refreshToken, $session);
         $this->ensureRefreshTokenIsUsable($refreshToken);
 
-        $account = $this->retrieveAccount($session->accountId());
+        $account = $this->accountRepository->id($session->accountId());
+        $this->ensureAccountExists($account);
         $this->ensureAccountCanRefreshToken($account);
 
         $refreshToken->revoke();
@@ -78,25 +78,11 @@ final readonly class RefreshTokenRefresherService
     }
 
     /** @throws SessionDoesNotExistException */
-    private function toSessionId(string $sessionId): SessionId
+    private function ensureSessionExists(?Session $session): void
     {
-        try {
-            return SessionId::fromString($sessionId);
-        } catch (InvalidArgumentException) {
-            throw new SessionDoesNotExistException();
-        }
-    }
-
-    /** @throws SessionDoesNotExistException */
-    private function retrieveSession(SessionId $sessionId): Session
-    {
-        $session = $this->sessionRepository->id($sessionId);
-
         if (null === $session) {
             throw new SessionDoesNotExistException();
         }
-
-        return $session;
     }
 
     /** @throws SessionExpiredException */
@@ -110,10 +96,6 @@ final readonly class RefreshTokenRefresherService
     /** @throws InvalidRefreshTokenException */
     private function retrieveRefreshToken(string $plainRefreshToken): RefreshToken
     {
-        if ('' === $plainRefreshToken) {
-            throw new InvalidRefreshTokenException();
-        }
-
         $refreshTokens = $this->refreshTokenRepository->search(
             Criteria::create([
                 FiltersGroupAnd::fromValues([
@@ -181,15 +163,11 @@ final readonly class RefreshTokenRefresherService
     }
 
     /** @throws AccountDoesNotExistException */
-    private function retrieveAccount(AccountId $accountId): Account
+    private function ensureAccountExists(?Account $account): void
     {
-        $account = $this->accountRepository->id($accountId);
-
         if (null === $account) {
             throw new AccountDoesNotExistException();
         }
-
-        return $account;
     }
 
     /** @throws AccountNotActivatedException|AccountDeletedException */

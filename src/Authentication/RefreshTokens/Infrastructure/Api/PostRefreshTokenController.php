@@ -12,9 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PostRefreshTokenController extends BaseController
 {
-    private const string REFRESH_TOKEN_COOKIE = 'refresh_token';
-    private const string SESSION_ID_COOKIE = 'session_id';
-
     public function __construct(
         private readonly QueryBus $queryBus
     ) {
@@ -24,15 +21,15 @@ class PostRefreshTokenController extends BaseController
     {
         $response = $this->queryBus->ask(
             new RefreshTokenQuery(
-                $request->cookies->get(self::SESSION_ID_COOKIE, ''),
-                $request->cookies->get(self::REFRESH_TOKEN_COOKIE, '')
+                $request->cookies->get('session_id', ''),
+                $request->cookies->get('refresh_token', '')
             )
         );
 
         $jsonResponse = new JsonResponse($response);
 
         $jsonResponse->headers->setCookie(
-            Cookie::create(self::SESSION_ID_COOKIE)
+            Cookie::create('session_id')
                 ->withValue($response->sessionId())
                 ->withHttpOnly(true)
                 ->withSecure(true)
@@ -41,7 +38,7 @@ class PostRefreshTokenController extends BaseController
         );
 
         $jsonResponse->headers->setCookie(
-            Cookie::create(self::REFRESH_TOKEN_COOKIE)
+            Cookie::create('refresh_token')
                 ->withValue($response->refreshToken())
                 ->withHttpOnly(true)
                 ->withSecure(true)

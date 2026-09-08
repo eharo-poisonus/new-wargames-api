@@ -10,6 +10,7 @@ use App\Authentication\RefreshTokens\Domain\Exceptions\RefreshTokenExpiredExcept
 use App\Authentication\RefreshTokens\Domain\Exceptions\RefreshTokenRevokedException;
 use App\Authentication\Sessions\Domain\Exceptions\SessionDoesNotExistException;
 use App\Authentication\Sessions\Domain\Exceptions\SessionExpiredException;
+use App\Authentication\Sessions\Domain\ValueObjects\SessionId;
 use App\Shared\Domain\Bus\Query\QueryHandler;
 
 final readonly class RefreshTokenQueryHandler implements QueryHandler
@@ -26,6 +27,6 @@ final readonly class RefreshTokenQueryHandler implements QueryHandler
      */
     public function __invoke(RefreshTokenQuery $query): RefreshTokenResponse
     {
-        return ($this->service)($query->sessionId(), $query->refreshToken());
+        return ($this->service)(SessionId::fromString($query->sessionId()), $query->refreshToken());
     }
 }
