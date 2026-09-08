@@ -7,14 +7,24 @@
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/migrations": "*",
+        "doctrine/orm": "*",
+        "firebase/php-jwt": "^7.1",
+        "lambdish/phunctional": "^2.1",
+        "ramsey/uuid": "^4.7",
+        "sentry/sentry-symfony": "^5.13",
+        "stripe/stripe-php": "^21.2",
         "symfony/console": "8.1.*",
         "symfony/dotenv": "8.1.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "8.1.*",
+        "symfony/http-client": "8.1.*",
+        "symfony/mailer": "8.1.*",
+        "symfony/messenger": "8.1.*",
+        "symfony/monolog-bundle": "^4.0",
+        "symfony/rate-limiter": "8.1.*",
         "symfony/runtime": "8.1.*",
         "symfony/yaml": "8.1.*"
-    },
-    "require-dev": {
     },
     "config": {
         "allow-plugins": {
@@ -64,8 +74,16 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
-            "require": "8.1.*"
+            "allow-contrib": true,
+            "require": "8.1.*",
+            "docker": true
         }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpunit/phpunit": "^11.4",
+        "symfony/browser-kit": "8.1.*",
+        "symfony/css-selector": "8.1.*",
+        "symfony/phpunit-bridge": "8.1.*"
     }
 }

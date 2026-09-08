@@ -1,0 +1,6 @@
+refresh-tokens.refresh:
+    path: /refresh-token
+    methods: [ POST ]
+    controller: App\Authentication\RefreshTokens\Infrastructure\Api\PostRefreshTokenController
+    defaults:
+        AUTH: FREE

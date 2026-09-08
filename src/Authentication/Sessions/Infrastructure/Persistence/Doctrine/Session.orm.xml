@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                       https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Authentication\Sessions\Domain\Session" table="sessions">
+        <id name="id" type="session_id" column="id">
+            <generator strategy="NONE"/>
+        </id>
+
+        <field name="accountId" type="account_id" column="account_id" />
+        <field name="device" length="255" column="device" />
+        <field name="ipAddress" length="45" column="ip_address" />
+        <field name="createdAt" type="datetime_immutable" column="created_at" />
+        <field name="expiresAt" type="datetime_immutable" column="expires_at" />
+
+        <indexes>
+            <index name="idx_sessions_account_id" columns="account_id"/>
+            <index name="idx_sessions_expires_at" columns="expires_at"/>
+        </indexes>
+    </entity>
+</doctrine-mapping>

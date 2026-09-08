@@ -1,0 +1,66 @@
+# Four alerts, and only four.
+#
+# The number is the point. An alert that fires often stops being read, and an alert nobody reads
+# is worse than no alert at all - it is the same silence with more noise in front of it. These
+# are the four things where the right response is to get up and look.
+#
+# Each carries the LogQL, the threshold and the reasoning. Grafana Cloud does not read this file
+# off disk; create the rules in the UI or POST them to
+# /api/v1/provisioning/alert-rules. See ../README.md.
+
+groups:
+  - name: wartable-api
+    interval: 1m
+    rules:
+
+      - alert: UnmappedErrors
+        expr: |
+          sum(count_over_time({app="wargames-api", env="prod", error_code="APP-000"}[5m])) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Errores sin mapear en producción"
+          description: >-
+            Un APP-000 es una excepción que nadie previó. Mira el panel "Últimos errores":
+            la línea lleva la ruta, el método y la clase de la excepción.
+
+      - alert: ActivationsLagBehindSignUps
+        expr: |
+          (sum(count_over_time({app="wargames-api", env="prod", event="user_signed_up"}[1h]))
+           - sum(count_over_time({app="wargames-api", env="prod", event="account_activated"}[1h]))) > 5
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Se dan de alta y no activan"
+          description: >-
+            Más de cinco altas por encima de las activaciones durante media hora. Antes de mirar
+            el código, comprueba que los correos llegan: SPF y DKIM del dominio remitente, y el
+            panel del proveedor de correo.
+
+      - alert: PrizesNotDelivered
+        expr: |
+          sum(count_over_time({app="wargames-api", env="prod", event=~"tournament_prize_skipped|prize_credit_failed"}[15m])) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Premios sin entregar"
+          description: >-
+            La línea lleva el motivo. `cooldown` es la regla funcionando y no requiere nada;
+            `credit_failed` es Stripe rechazando el abono y sí, porque alguien se quedó sin sus
+            días.
+
+      - alert: TooManyRateLimitedRequests
+        expr: |
+          sum(count_over_time({app="wargames-api", env="prod", error_code="APP-002"}[5m])) > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Muchas peticiones limitadas"
+          description: >-
+            Cincuenta 429 en cinco minutos. Si TRUSTED_PROXIES está mal, todo el mundo comparte
+            la IP del proxy y se limitan entre sí: mira la columna ip_address de la tabla
+            sessions y comprueba que sale la IP real de la gente.

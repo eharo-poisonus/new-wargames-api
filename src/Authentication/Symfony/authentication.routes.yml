@@ -1,0 +1,7 @@
+accounts:
+    prefix: /auth
+    resource: ../Accounts/Infrastructure/Api/Symfony/accounts.routes.yml
+
+refresh-tokens:
+    prefix: /auth
+    resource: ../RefreshTokens/Infrastructure/Api/Symfony/refresh-tokens.routes.yml

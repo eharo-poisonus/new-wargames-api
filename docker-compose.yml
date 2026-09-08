@@ -1,0 +1,62 @@
+services:
+
+  dev-wargames2-db:
+    image: mysql
+    container_name: dev-wargames2-db
+    volumes:
+      - db2-data:/var/lib/mysql
+    environment:
+      MYSQL_USER: eharo
+      MYSQL_PASSWORD: 12341234
+      MYSQL_DATABASE: wargames
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - '3306:3306'
+    networks:
+      - wargames2-network
+
+  dev-wargames2-php:
+    build:
+      context: .
+      dockerfile: environment/development/docker/php.Dockerfile
+    container_name: dev-wargames2-php
+    volumes:
+      - .:/var/www/html
+      - ./environment/development/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: dev
+      XDEBUG_CLIENT_HOST: host.docker.internal
+      XDEBUG_CLIENT_PORT: 9003
+    networks:
+      - wargames2-network
+
+  dev-nginx:
+    build:
+      context: .
+      dockerfile: environment/development/docker/nginx.Dockerfile
+    container_name: dev-wargames2-nginx
+    depends_on:
+      - dev-wargames2-php
+    volumes:
+      - .:/var/www/html
+      - ./environment/development/virtualhosts:/etc/nginx/conf.d
+    ports:
+      - '82:80'
+    networks:
+      - wargames2-network
+
+  dev-wargames2-mailhog:
+    image: mailhog/mailhog:latest
+    container_name: dev-wargames2-mailhog
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    networks:
+      - wargames2-network
+
+networks:
+  wargames2-network:
+
+volumes:
+  db2-data:

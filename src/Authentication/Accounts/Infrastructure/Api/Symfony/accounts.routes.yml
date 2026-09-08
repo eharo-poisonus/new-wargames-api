@@ -1,0 +1,20 @@
+accounts.create:
+    path: /sign-up
+    methods: [ POST ]
+    controller: App\Authentication\Accounts\Infrastructure\Api\PostSignUpController
+    defaults:
+        AUTH: FREE
+
+accounts.sign-in:
+    path: /sign-in
+    methods: [ POST ]
+    controller: App\Authentication\Accounts\Infrastructure\Api\PostSignInController
+    defaults:
+        AUTH: FREE
+
+accounts.activate:
+    path: /accounts/{account_id}/activate/{token}
+    methods: [ PUT ]
+    controller: App\Authentication\Accounts\Infrastructure\Api\PutActivateAccountController
+    defaults:
+        AUTH: FREE

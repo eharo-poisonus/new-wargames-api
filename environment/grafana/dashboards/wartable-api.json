@@ -1,0 +1,539 @@
+{
+  "title": "WarTable — API",
+  "uid": "wartable-api",
+  "tags": [
+    "wartable"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "DS_LOKI",
+        "type": "datasource",
+        "query": "loki",
+        "label": "Loki",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "env",
+        "type": "custom",
+        "label": "Entorno",
+        "query": "prod,dev",
+        "current": {
+          "text": "prod",
+          "value": "prod"
+        },
+        "options": [
+          {
+            "text": "prod",
+            "value": "prod",
+            "selected": true
+          },
+          {
+            "text": "dev",
+            "value": "dev",
+            "selected": false
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Errores por minuto",
+      "description": "Todo lo que sale con nivel error o critical. Si esta línea sube y no has desplegado, algo se ha roto solo.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", level=~\"error|critical\"}[1m]))",
+          "queryType": "range",
+          "legendFormat": "errores"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Errores por código",
+      "description": "Agrupado por error_code. Los códigos mapeados son fallos previstos (un 402, un 409); APP-000 es el que importa, porque significa que algo reventó sin estar contemplado.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "topk(10, sum by (error_code) (count_over_time({app=\"wargames-api\", env=\"$env\", error_code!=\"\"}[$__interval])))",
+          "queryType": "range",
+          "legendFormat": "{{error_code}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Altas",
+      "description": "Cuentas creadas. El primer número que miras durante una promoción.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"user_signed_up\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "altas"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Activaciones",
+      "description": "Cuentas que llegaron a activarse. La distancia con las altas es el correo que no llega: si esto se queda muy por debajo, mira SPF y DKIM antes que nada.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"account_activated\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "activaciones"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Partidas registradas",
+      "description": "Batallas de campaña. Es la señal de que alguien está usando esto de verdad y no solo mirándolo.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"battle_registered\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "partidas"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Días de premium regalados",
+      "description": "Códigos, promociones, premios y referidos. Lo que la plataforma está dando.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"premium_days_granted\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "concesiones"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "value"
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Embudo del alta",
+      "description": "Alta, correo enviado, activación. Los tres pasos que tiene que atravesar alguien que llega por una promoción, y donde se cae la gente.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"user_signed_up\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "1. alta"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"activation_email_sent\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "2. correo enviado"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"account_activated\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "3. activada"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Dinero y regalos",
+      "description": "Suscripciones sincronizadas desde Stripe frente a lo que se regala. Mientras Stripe no esté configurado la primera serie es plana y eso es correcto.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"subscription_synced\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "Stripe"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"gift_code_redeemed\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "códigos de regalo"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"promotion_redeemed\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "promociones"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"referral_confirmed\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "referidos confirmados"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Premios que no se pudieron dar",
+      "description": "Un premio saltado tiene siempre un motivo en la línea: cooldown, crédito fallido o mapa borrado. Si esto no es cero, alguien ganó algo y no lo recibió.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 22
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=~\"tournament_prize_skipped|prize_credit_failed\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "saltados"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Comentarios y bugs",
+      "description": "Lo que la gente manda por el botón. Durante una prueba con diez personas, esto es la métrica más útil de todo el panel.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 22
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=\"feedback_received\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "mensajes"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Moderación",
+      "description": "Baneos y cambios de rol. Poco frecuente por definición, y por eso vale la pena verlo.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 22
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "expr": "sum(count_over_time({app=\"wargames-api\", env=\"$env\", event=~\"user_ban_changed|user_roles_changed|shop_account_reviewed\"}[$__interval]))",
+          "queryType": "range",
+          "legendFormat": "acciones"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 12,
+      "type": "logs",
+      "title": "Últimos errores",
+      "description": "El detalle, para cuando un panel de arriba te ha dicho dónde mirar.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "queryType": "range",
+          "expr": "{app=\"wargames-api\", env=\"$env\", level=~\"error|critical\"}"
+        }
+      ]
+    }
+  ]
+}

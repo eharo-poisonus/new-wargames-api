@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                       https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Authentication\Accounts\Domain\Account" table="accounts">
+        <id name="id" type="account_id" column="id">
+            <generator strategy="NONE"/>
+        </id>
+        <field name="type" type="enum" enum-type="App\Authentication\Accounts\Domain\ValueObjects\AccountType" column="type" />
+        <field name="username" type="username" column="username" unique="true" />
+        <field name="email" type="account_email" column="email" unique="true" />
+        <field name="password" type="hashed_password" column="password" length="255" />
+        <field name="verified" type="boolean" column="verified" />
+        <field name="referredBy" type="account_id" column="referred_by" nullable="true" />
+        <field name="emailMarketingAccepted" type="boolean" column="email_marketing_accepted" />
+        <field name="termsAccepted" type="boolean" column="terms_accepted" />
+        <field name="termsVersion" type="enum" enum-type="App\Authentication\Accounts\Domain\ValueObjects\TermsVersion" column="terms_accepted_version" />
+        <field name="activationToken" length="255" column="activation_token" nullable="true" />
+        <field name="activationTokenExpiresAt" type="datetime_immutable" column="activation_token_expires_at" nullable="true" />
+        <field name="termsAcceptedAt" type="datetime_immutable" column="terms_accepted_at" />
+        <field name="createdAt" type="datetime_immutable" column="created_at" />
+        <field name="updatedAt" type="datetime_immutable" column="updated_at" nullable="true" />
+        <field name="deletedAt" type="datetime_immutable" column="deleted_at" nullable="true" />
+        <field name="activatedAt" type="datetime_immutable" column="activated_at" nullable="true" />
+
+
+        <indexes>
+            <index name="idx_user_credentials_username" columns="username"/>
+            <index name="idx_user_credentials_email" columns="email"/>
+        </indexes>
+    </entity>
+</doctrine-mapping>
