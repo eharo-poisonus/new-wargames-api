@@ -2,7 +2,7 @@
 
 namespace App\Authentication\Accounts\Infrastructure\Api;
 
-use App\Authentication\Accounts\Application\ValidateAccount\ValidateAccountCommand;
+use App\Authentication\Accounts\Application\ActivateAccount\ActivateAccountCommand;
 use App\Shared\Domain\Bus\Command\CommandBus;
 use App\Shared\Infrastructure\Api\BaseController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +18,7 @@ class PutActivateAccountController extends BaseController
     public function __invoke(Request $request): Response
     {
         $this->commandBus->dispatch(
-            new ValidateAccountCommand(
+            new ActivateAccountCommand(
                 $request->attributes->get('account_id'),
                 $request->attributes->get('token')
             )

@@ -49,7 +49,7 @@ final readonly class SignInService
         $claims = $this->createClaims($account);
         $accessToken = $this->accessTokenUtils->generate($claims);
 
-        $account->signedIn(
+        $account->signIn(
             $sessionId,
             $device,
             $ipAddress,

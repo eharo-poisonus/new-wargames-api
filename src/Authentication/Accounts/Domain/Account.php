@@ -4,6 +4,7 @@ namespace App\Authentication\Accounts\Domain;
 
 use App\Authentication\Accounts\Domain\Events\AccountCreated;
 use App\Authentication\Accounts\Domain\Events\SignedIn;
+use App\Authentication\Accounts\Domain\Events\SignedOut;
 use App\Authentication\Accounts\Domain\ValueObjects\AccountId;
 use App\Authentication\Accounts\Domain\ValueObjects\AccountType;
 use App\Authentication\Accounts\Domain\ValueObjects\Email;
@@ -87,9 +88,8 @@ class Account extends AggregateRoot
         $this->activationTokenExpiresAt = null;
     }
 
-    public function signedIn(string $sessionId, string $device, string $ipAddress, string $hashedRefreshToken): void
+    public function signIn(string $sessionId, string $device, string $ipAddress, string $hashedRefreshToken): void
     {
-        // maybe store last sign in date
         $this->record(
             new SignedIn(
                 $this->id,
@@ -101,9 +101,18 @@ class Account extends AggregateRoot
         );
     }
 
+    public function signOut(string $sessionId): void
+    {
+        $this->record(
+            new SignedOut(
+                $this->id,
+                $sessionId
+            )
+        );
+    }
+
     public function delete(): void
     {
-        // y anomizar la cuenta
         $this->deletedAt = new DateTimeImmutable();
     }
 

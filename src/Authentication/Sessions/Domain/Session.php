@@ -4,6 +4,7 @@ namespace App\Authentication\Sessions\Domain;
 
 use App\Authentication\Accounts\Domain\ValueObjects\AccountId;
 use App\Authentication\Sessions\Domain\Events\SessionCreated;
+use App\Authentication\Sessions\Domain\Events\SessionTerminated;
 use App\Authentication\Sessions\Domain\ValueObjects\SessionId;
 use App\Shared\Domain\Aggregate\AggregateRoot;
 use DateTimeImmutable;
@@ -16,7 +17,8 @@ class Session extends AggregateRoot
         private string $device,
         private string $ipAddress,
         private DateTimeImmutable $createdAt,
-        private DateTimeImmutable $expiresAt
+        private DateTimeImmutable $expiresAt,
+        private ?DateTimeImmutable $terminatedAt = null
     ) {
     }
 
@@ -34,7 +36,8 @@ class Session extends AggregateRoot
             $device,
             $ipAddress,
             new DateTimeImmutable(),
-            new DateTimeImmutable(sprintf('+%s seconds', $ttl))
+            new DateTimeImmutable(sprintf('+%s seconds', $ttl)),
+            null
         );
 
         $session->record(new SessionCreated($session->id, $refreshTokenHash));
@@ -42,9 +45,21 @@ class Session extends AggregateRoot
         return $session;
     }
 
+    public function terminate(): void
+    {
+        $this->terminatedAt = new DateTimeImmutable();
+
+        $this->record(new SessionTerminated($this->id));
+    }
+
     public function isExpired(): bool
     {
         return $this->expiresAt <= new DateTimeImmutable();
+    }
+
+    public function isTerminated(): bool
+    {
+        return null !== $this->terminatedAt;
     }
 
     public function id(): SessionId
@@ -105,5 +120,15 @@ class Session extends AggregateRoot
     public function setExpiresAt(DateTimeImmutable $expiresAt): void
     {
         $this->expiresAt = $expiresAt;
+    }
+
+    public function terminatedAt(): ?DateTimeImmutable
+    {
+        return $this->terminatedAt;
+    }
+
+    public function setTerminatedAt(?DateTimeImmutable $terminatedAt): void
+    {
+        $this->terminatedAt = $terminatedAt;
     }
 }

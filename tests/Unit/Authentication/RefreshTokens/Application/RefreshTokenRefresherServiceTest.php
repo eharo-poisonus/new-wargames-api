@@ -13,6 +13,7 @@ use App\Authentication\Accounts\Domain\ValueObjects\TermsVersion;
 use App\Authentication\Accounts\Domain\ValueObjects\Username;
 use App\Authentication\Accounts\Infrastructure\Security\JwtAccessTokenUtils;
 use App\Authentication\RefreshTokens\Application\CreateRefreshToken\RefreshTokenCreatorService;
+use App\Authentication\RefreshTokens\Application\RevokeRefreshTokens\RefreshTokensRevokerService;
 use App\Authentication\RefreshTokens\Application\RefreshRefreshToken\RefreshTokenRefresherService;
 use App\Authentication\RefreshTokens\Domain\Exceptions\InvalidRefreshTokenException;
 use App\Authentication\RefreshTokens\Domain\Exceptions\RefreshTokenExpiredException;
@@ -194,6 +195,7 @@ final class RefreshTokenRefresherServiceTest extends TestCase
             $this->refreshTokenHasher,
             new RefreshTokenGenerator(),
             new RefreshTokenCreatorService($this->refreshTokenRepository),
+            new RefreshTokensRevokerService($this->refreshTokenRepository),
             $this->accessTokenUtils,
             2592000
         );

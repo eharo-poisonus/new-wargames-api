@@ -13,10 +13,12 @@
         <field name="ipAddress" length="45" column="ip_address" />
         <field name="createdAt" type="datetime_immutable" column="created_at" />
         <field name="expiresAt" type="datetime_immutable" column="expires_at" />
+        <field name="terminatedAt" type="datetime_immutable" column="terminated_at" nullable="true" />
 
         <indexes>
             <index name="idx_sessions_account_id" columns="account_id"/>
             <index name="idx_sessions_expires_at" columns="expires_at"/>
+            <index name="idx_sessions_active" columns="account_id, terminated_at"/>
         </indexes>
     </entity>
 </doctrine-mapping>
