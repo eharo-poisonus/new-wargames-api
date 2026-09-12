@@ -7,14 +7,17 @@ use App\Shared\Domain\Bus\Event\DomainEvent;
 readonly class AccountCreated extends DomainEvent
 {
     private string $validationToken;
+    private string $username;
 
     public function __construct(
         string $aggregateId,
         string $validationToken,
+        string $username,
         ?string $eventId = null,
         ?string $occurredOn = null
     ) {
         $this->validationToken = $validationToken;
+        $this->username = $username;
         parent::__construct($aggregateId, $eventId, $occurredOn);
     }
 
@@ -45,5 +48,10 @@ readonly class AccountCreated extends DomainEvent
     public function validationToken(): string
     {
         return $this->validationToken;
+    }
+
+    public function username(): string
+    {
+        return $this->username;
     }
 }

@@ -10,7 +10,7 @@ final readonly class HttpRateLimitMiddleware
 {
     private const array LIMITED_ROUTES = [
         'accounts.sign-in' => 'signIn',
-        'accounts.create' => 'signUp',
+        //'accounts.create' => 'signUp',
         'accounts.forgot-password' => 'passwordReset',
         'refresh-tokens.refresh' => 'refreshToken'
     ];
@@ -38,7 +38,7 @@ final readonly class HttpRateLimitMiddleware
 
         $limiter = match ($which) {
             'signIn' => $this->signInLimiter,
-            'signUp' => $this->signUpLimiter,
+            //'signUp' => $this->signUpLimiter,
             'refreshToken' => $this->refreshTokenLimiter,
             default => $this->passwordResetLimiter
         };

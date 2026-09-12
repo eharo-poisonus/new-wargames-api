@@ -10,7 +10,7 @@ use App\Authentication\Accounts\Domain\ValueObjects\AccountType;
 use App\Authentication\Accounts\Domain\ValueObjects\Email;
 use App\Authentication\Accounts\Domain\ValueObjects\PlainPassword;
 use App\Authentication\Accounts\Domain\ValueObjects\TermsVersion;
-use App\Authentication\Accounts\Domain\ValueObjects\Username;
+use App\Identity\Players\Domain\ValueObjects\Username;
 use App\Shared\Domain\Bus\Command\CommandHandler;
 
 final readonly class CreateAccountCommandHandler implements CommandHandler
@@ -20,14 +20,14 @@ final readonly class CreateAccountCommandHandler implements CommandHandler
     ) {
     }
 
-    /** @throws EmailAlreadyInUseException | UsernameAlreadyInUseException | ReferralUserNotExistsException */
+    /** @throws EmailAlreadyInUseException|UsernameAlreadyInUseException|ReferralUserNotExistsException */
     public function __invoke(CreateAccountCommand $command): void
     {
         ($this->service)(
             AccountId::fromString($command->id()),
             AccountType::from($command->type()),
-            Username::fromString($command->username()),
             Email::fromString($command->email()),
+            Username::fromString($command->username()),
             PlainPassword::fromString($command->password()),
             $command->referredBy() === null ? null : AccountId::fromString($command->referredBy()),
             $command->isEmailMarketingAccepted(),

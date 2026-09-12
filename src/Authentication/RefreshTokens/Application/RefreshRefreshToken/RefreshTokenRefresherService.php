@@ -9,6 +9,7 @@ use App\Authentication\Accounts\Domain\AccountRepository;
 use App\Authentication\Accounts\Domain\Exceptions\AccountDeletedException;
 use App\Authentication\Accounts\Domain\Exceptions\AccountDoesNotExistException;
 use App\Authentication\Accounts\Domain\Exceptions\AccountNotActivatedException;
+use App\Authentication\Accounts\Domain\ValueObjects\AccountId;
 use App\Authentication\RefreshTokens\Application\CreateRefreshToken\RefreshTokenCreatorService;
 use App\Authentication\RefreshTokens\Domain\Exceptions\InvalidRefreshTokenException;
 use App\Authentication\RefreshTokens\Domain\Exceptions\RefreshTokenExpiredException;
@@ -22,6 +23,8 @@ use App\Authentication\Sessions\Domain\Exceptions\SessionExpiredException;
 use App\Authentication\Sessions\Domain\Session;
 use App\Authentication\Sessions\Domain\SessionRepository;
 use App\Authentication\Sessions\Domain\ValueObjects\SessionId;
+use App\Identity\Players\Domain\Player;
+use App\Identity\Players\Domain\PlayerRepository;
 use App\Shared\Domain\Criteria\Criteria;
 use App\Shared\Domain\Criteria\Filters\Filter;
 use App\Shared\Domain\Criteria\Groups\FiltersGroupAnd;
@@ -32,6 +35,7 @@ final readonly class RefreshTokenRefresherService
         private RefreshTokenRepository $refreshTokenRepository,
         private SessionRepository $sessionRepository,
         private AccountRepository $accountRepository,
+        private PlayerRepository $playerRepository,
         private RefreshTokenHasher $refreshTokenHasher,
         private RefreshTokenGenerator $refreshTokenGenerator,
         private RefreshTokenCreatorService $refreshTokenCreator,
@@ -59,6 +63,8 @@ final readonly class RefreshTokenRefresherService
         $this->ensureAccountExists($account);
         $this->ensureAccountCanRefreshToken($account);
 
+        $player = $this->retrievePlayer($account->id());
+
         $refreshToken->revoke();
         $this->refreshTokenRepository->update($refreshToken);
 
@@ -71,7 +77,7 @@ final readonly class RefreshTokenRefresherService
         );
 
         return new RefreshTokenResponse(
-            $this->accessTokenUtils->generate($this->createClaims($account)),
+            $this->accessTokenUtils->generate($this->createClaims($account, $player)),
             $rotatedRefreshToken,
             $session->id()->value()
         );
@@ -182,11 +188,26 @@ final readonly class RefreshTokenRefresherService
         }
     }
 
-    private function createClaims(Account $account): AccessTokenClaims
+    private function retrievePlayer(AccountId $accountId): Player
+    {
+        return $this->playerRepository->searchOne(
+            Criteria::create([
+                FiltersGroupAnd::fromValues([
+                    Filter::fromValues([
+                        'field' => 'accountId',
+                        'operator' => '=',
+                        'value' => $accountId
+                    ])
+                ])
+            ])
+        );
+    }
+
+    private function createClaims(Account $account, Player $player): AccessTokenClaims
     {
         return new AccessTokenClaims(
             $account->id(),
-            $account->username(),
+            $player->username(),
             $account->email(),
             []
         );

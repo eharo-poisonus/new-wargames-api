@@ -14,7 +14,8 @@ use App\Authentication\Accounts\Domain\ValueObjects\Email;
 use App\Authentication\Accounts\Domain\ValueObjects\HashedPassword;
 use App\Authentication\Accounts\Domain\ValueObjects\PlainPassword;
 use App\Authentication\Accounts\Domain\ValueObjects\TermsVersion;
-use App\Authentication\Accounts\Domain\ValueObjects\Username;
+use App\Identity\Players\Domain\PlayerRepository;
+use App\Identity\Players\Domain\ValueObjects\Username;
 use App\Shared\Domain\Bus\Event\EventBus;
 use App\Shared\Domain\Criteria\Criteria;
 use App\Shared\Domain\Criteria\Filters\Filter;
@@ -24,17 +25,18 @@ final readonly class AccountCreatorService
 {
     public function __construct(
         private AccountRepository $accountRepository,
+        private PlayerRepository $playerRepository,
         private ValidationTokenGenerator $validationTokenGenerator,
         private EventBus $syncEventBus
     ) {
     }
 
-    /** @throws EmailAlreadyInUseException | UsernameAlreadyInUseException | ReferralUserNotExistsException */
+    /** @throws EmailAlreadyInUseException|UsernameAlreadyInUseException|ReferralUserNotExistsException */
     public function __invoke(
         AccountId $id,
         AccountType $type,
-        Username $username,
         Email $email,
+        Username $username,
         PlainPassword $password,
         ?AccountId $referredBy,
         bool $emailMarketingAccepted,
@@ -50,8 +52,8 @@ final readonly class AccountCreatorService
         $newAccount = Account::create(
             $id,
             $type,
-            $username,
             $email,
+            $username,
             HashedPassword::fromString($password->hash()),
             $referredBy,
             $emailMarketingAccepted,
@@ -69,7 +71,7 @@ final readonly class AccountCreatorService
     /** @throws UsernameAlreadyInUseException */
     private function ensureUsernameNotInUse(Username $username): void
     {
-        $otherAccountsWithSameUsername = $this->accountRepository->search(
+        $otherAccountsWithSameUsername = $this->playerRepository->search(
             Criteria::create([
                 FiltersGroupAnd::fromValues([
                     Filter::fromValues([

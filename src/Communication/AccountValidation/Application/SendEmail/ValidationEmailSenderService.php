@@ -6,6 +6,7 @@ use App\Authentication\Accounts\Domain\AccountRepository;
 use App\Authentication\Accounts\Domain\ValueObjects\AccountId;
 use App\Communication\Emails\Domain\EmailMessage;
 use App\Communication\Emails\Domain\EmailSender;
+use App\Identity\Players\Domain\ValueObjects\Username;
 
 final readonly class ValidationEmailSenderService
 {
@@ -15,11 +16,9 @@ final readonly class ValidationEmailSenderService
     ) {
     }
 
-    public function __invoke(AccountId $id, string $validationToken): void
+    public function __invoke(AccountId $id, string $validationToken, Username $username): void
     {
         $targetAccount = $this->accountRepository->id($id);
-
-        $username = $targetAccount->username()->value();
 
         $url = sprintf('http://localhost:82/api/accounts/%s/activate/%s', $id, $validationToken);
 

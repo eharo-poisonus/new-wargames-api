@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                       https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="App\Identity\Players\Domain\Player" table="players">
+        <id name="id" type="player_id" column="id">
+            <generator strategy="NONE"/>
+        </id>
+        <field name="accountId" type="account_id" column="account_id" unique="true" nullable="true" />
+        <field name="username" type="username" column="username" unique="true" length="30" />
+        <field name="avatarUrl" column="avatar_url" nullable="true" />
+        <field name="coverUrl" column="cover_url" nullable="true" />
+        <field name="bio" column="bio" nullable="true" />
+        <field name="gender" column="gender" type="enum" enum-type="App\Identity\Players\Domain\ValueObjects\Gender" />
+        <field name="dateOfBirth" column="date_of_birth" type="datetime_immutable" />
+        <field name="country" column="country" length="2" nullable="true" />
+        <field name="state" column="state" length="255" nullable="true" />
+        <field name="city" column="city" length="255" nullable="true" />
+        <field name="zipCode" column="zip_code" length="255" nullable="true" />
+        <field name="createdAt" column="created_at" type="datetime_immutable" />
+        <field name="updatedAt" column="updated_at" type="datetime_immutable" nullable="true" />
+        <field name="deletedAt" column="deleted_at" type="datetime_immutable" nullable="true" />
+
+        <indexes>
+            <index name="idx_players_username" columns="username"/>
+            <index name="idx_players_account_id" columns="account_id"/>
+        </indexes>
+    </entity>
+</doctrine-mapping>

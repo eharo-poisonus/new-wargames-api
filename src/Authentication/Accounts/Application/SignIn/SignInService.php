@@ -12,11 +12,14 @@ use App\Authentication\Accounts\Domain\Exceptions\AccountNotVerifiedException;
 use App\Authentication\Accounts\Domain\Exceptions\InvalidPasswordException;
 use App\Authentication\Accounts\Domain\Exceptions\MoreThanOneAccountWithSameEmailException;
 use App\Authentication\Accounts\Domain\Exceptions\TermsNotAcceptedException;
+use App\Authentication\Accounts\Domain\ValueObjects\AccountId;
 use App\Authentication\Accounts\Domain\ValueObjects\Email;
 use App\Authentication\Accounts\Domain\ValueObjects\PlainPassword;
 use App\Authentication\RefreshTokens\Domain\RefreshTokenGenerator;
 use App\Authentication\RefreshTokens\Domain\RefreshTokenHasher;
 use App\Authentication\Sessions\Domain\ValueObjects\SessionId;
+use App\Identity\Players\Domain\Player;
+use App\Identity\Players\Domain\PlayerRepository;
 use App\Shared\Domain\Bus\Event\EventBus;
 use App\Shared\Domain\Criteria\Criteria;
 use App\Shared\Domain\Criteria\Filters\Filter;
@@ -26,6 +29,7 @@ final readonly class SignInService
 {
     public function __construct(
         private AccountRepository $accountRepository,
+        private PlayerRepository $playerRepository,
         private RefreshTokenGenerator $refreshTokenGenerator,
         private RefreshTokenHasher $refreshTokenHasher,
         private AccessTokenUtils $accessTokenUtils,
@@ -37,16 +41,22 @@ final readonly class SignInService
      * @throws TermsNotAcceptedException|AccountNotVerifiedException|AccountDeletedException
      * @throws MoreThanOneAccountWithSameEmailException|AccountNotActivatedException|InvalidPasswordException
      */
-    public function __invoke(Email $email, PlainPassword $plainPassword, string $device, string $ipAddress): SignInResponse
-    {
+    public function __invoke(
+        Email $email,
+        PlainPassword $plainPassword,
+        string $device,
+        string $ipAddress
+    ): SignInResponse {
         $account = $this->retrieveAccountFromEmail($email);
         $this->ensurePasswordIsCorrect($account, $plainPassword);
         $this->ensureAccountCanPerformSignIn($account);
 
+        $player = $this->retrievePlayer($account->id());
+
         $sessionId = SessionId::random();
         $refreshToken = $this->refreshTokenGenerator->generate();
 
-        $claims = $this->createClaims($account);
+        $claims = $this->createClaims($account, $player);
         $accessToken = $this->accessTokenUtils->generate($claims);
 
         $account->signIn(
@@ -113,11 +123,26 @@ final readonly class SignInService
         }
     }
 
-    private function createClaims(Account $account): AccessTokenClaims
+    private function retrievePlayer(AccountId $accountId): Player
+    {
+        return $this->playerRepository->searchOne(
+            Criteria::create([
+                FiltersGroupAnd::fromValues([
+                    Filter::fromValues([
+                        'field' => 'accountId',
+                        'operator' => '=',
+                        'value' => $accountId
+                    ])
+                ])
+            ])
+        );
+    }
+
+    private function createClaims(Account $account, Player $player): AccessTokenClaims
     {
         return new AccessTokenClaims(
             $account->id(),
-            $account->username(),
+            $player->username(),
             $account->email(),
             []
         );

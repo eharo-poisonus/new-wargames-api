@@ -4,7 +4,7 @@ namespace App\Authentication\Accounts\Domain;
 
 use App\Authentication\Accounts\Domain\ValueObjects\AccountId;
 use App\Authentication\Accounts\Domain\ValueObjects\Email;
-use App\Authentication\Accounts\Domain\ValueObjects\Username;
+use App\Identity\Players\Domain\ValueObjects\Username;
 
 readonly class AccessTokenClaims
 {

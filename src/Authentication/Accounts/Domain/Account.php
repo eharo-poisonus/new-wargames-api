@@ -10,7 +10,7 @@ use App\Authentication\Accounts\Domain\ValueObjects\AccountType;
 use App\Authentication\Accounts\Domain\ValueObjects\Email;
 use App\Authentication\Accounts\Domain\ValueObjects\HashedPassword;
 use App\Authentication\Accounts\Domain\ValueObjects\TermsVersion;
-use App\Authentication\Accounts\Domain\ValueObjects\Username;
+use App\Identity\Players\Domain\ValueObjects\Username;
 use App\Shared\Domain\Aggregate\AggregateRoot;
 use DateTimeImmutable;
 
@@ -19,7 +19,6 @@ class Account extends AggregateRoot
     private function __construct(
         private AccountId $id,
         private AccountType $type,
-        private Username $username,
         private Email $email,
         private HashedPassword $password,
         private bool $verified,
@@ -40,8 +39,8 @@ class Account extends AggregateRoot
     public static function create(
         AccountId $id,
         AccountType $type,
-        Username $username,
         Email $email,
+        Username $username,
         HashedPassword $password,
         ?AccountId $referredBy,
         bool $emailMarketingAccepted,
@@ -53,7 +52,6 @@ class Account extends AggregateRoot
         $account = new self(
             $id,
             $type,
-            $username,
             $email,
             $password,
             $type === AccountType::PERSONAL,
@@ -73,7 +71,8 @@ class Account extends AggregateRoot
         $account->record(
             new AccountCreated(
                 $account->id,
-                $plainActivationToken
+                $plainActivationToken,
+                $username->value()
             )
         );
 
@@ -134,16 +133,6 @@ class Account extends AggregateRoot
     public function setType(AccountType $type): void
     {
         $this->type = $type;
-    }
-
-    public function username(): Username
-    {
-        return $this->username;
-    }
-
-    public function setUsername(Username $username): void
-    {
-        $this->username = $username;
     }
 
     public function email(): Email

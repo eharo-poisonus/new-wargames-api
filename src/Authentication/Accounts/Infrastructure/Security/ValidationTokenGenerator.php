@@ -13,11 +13,13 @@ class ValidationTokenGenerator implements ValidationTokenGeneratorInterface
 
     public function hash(string $token): string
     {
-        return password_hash($token, PASSWORD_DEFAULT);
+        return hash('sha256', $token);
     }
 
     public function verify(string $token, string $hash): bool
     {
-        return password_verify($token, $hash);
+        $hashedInput = hash('sha256', $token);
+
+        return hash_equals($hash, $hashedInput);
     }
 }

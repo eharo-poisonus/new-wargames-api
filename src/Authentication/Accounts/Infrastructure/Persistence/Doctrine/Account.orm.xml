@@ -8,7 +8,6 @@
             <generator strategy="NONE"/>
         </id>
         <field name="type" type="enum" enum-type="App\Authentication\Accounts\Domain\ValueObjects\AccountType" column="type" />
-        <field name="username" type="username" column="username" unique="true" />
         <field name="email" type="account_email" column="email" unique="true" />
         <field name="password" type="hashed_password" column="password" length="255" />
         <field name="verified" type="boolean" column="verified" />
@@ -26,8 +25,7 @@
 
 
         <indexes>
-            <index name="idx_user_credentials_username" columns="username"/>
-            <index name="idx_user_credentials_email" columns="email"/>
+            <index name="idx_accounts_email" columns="email"/>
         </indexes>
     </entity>
 </doctrine-mapping>

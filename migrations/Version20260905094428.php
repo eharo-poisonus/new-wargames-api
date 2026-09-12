@@ -19,7 +19,6 @@ final class Version20260905094428 extends AbstractMigration
         $this->addSql('CREATE TABLE accounts (
             id CHAR(36) NOT NULL,
             type ENUM(\'PERSONAL\', \'BUSINESS\', \'CLUB\', \'SUPPLIER\', \'PARTNER\') NOT NULL,
-            username VARCHAR(24) NOT NULL,
             email VARCHAR(100) NOT NULL,
             password VARCHAR(255) NOT NULL,
             verified BOOLEAN NOT NULL,
@@ -37,10 +36,8 @@ final class Version20260905094428 extends AbstractMigration
             PRIMARY KEY(id)
         )');
 
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_ACCOUNTS_USERNAME ON accounts (username)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_ACCOUNTS_EMAIL ON accounts (email)');
-        $this->addSql('CREATE INDEX idx_user_credentials_username ON accounts (username)');
-        $this->addSql('CREATE INDEX idx_user_credentials_email ON accounts (email)');
+        $this->addSql('CREATE INDEX idx_accounts_email ON accounts (email)');
     }
 
     public function down(Schema $schema): void
