@@ -50,14 +50,10 @@ class RefreshToken {
   -DateTimeImmutable expiresAt
   -DateTimeImmutable revokedAt
 }
-class Player {
-  <<Community>>
-}
 Account "1" *-- "0..*" ActivationToken
 Account "1" *-- "0..*" Consent
 Session "1" *-- "1..*" RefreshToken
 Session ..> Account : accountId
-Account ..> Player : referredBy
 ```
 
 Nullables: `referredBy`, `verifiedAt`, `deletedAt`, `usedAt`, `revokedAt`, `expiredAt`.

@@ -54,6 +54,7 @@ Organization *-- Location
 Player ..> Account : accountId
 Membership ..> Account : accountId
 Membership ..> Organization : organizationId
+    Player ..> Player : referredBy
 ```
 
 `city`, `zipCode` y `street` son obligatorios para tiendas. Esa regla la valida `Organization`, no `Location`.
